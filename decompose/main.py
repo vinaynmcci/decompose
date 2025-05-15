@@ -6,7 +6,7 @@ import os
 import subprocess
 
 GITHUB_REPO_API = "https://api.github.com/repos/vinaynmcci/decompose/releases/latest"
-CURRENT_VERSION = "3.0.0"
+CURRENT_VERSION = "4.0.0"
 
 
 

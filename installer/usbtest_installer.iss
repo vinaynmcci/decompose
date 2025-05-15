@@ -1,6 +1,6 @@
 [Setup]
 AppName=USBTEST
-AppVersion=3.0.0
+AppVersion=4.0.0
 DefaultDirName={pf}\USBTEST
 DefaultGroupName=USBTEST
 OutputBaseFilename=USBTEST-Setup
