@@ -1,10 +1,13 @@
 import wx
 import requests
 import webbrowser
+import tempfile
+import os
+import subprocess
 
 GITHUB_REPO_API = "https://api.github.com/repos/vinaynmcci/decompose/releases/latest"
-CURRENT_VERSION = "2.0.0"
-GITHUB_RELEASE_URL = "https://github.com/vinaynmcci/decompose/releases/latest"
+CURRENT_VERSION = "3.0.0"
+
 
 
 class USBTestFrame(wx.Frame):
@@ -26,6 +29,8 @@ class USBTestFrame(wx.Frame):
         version_item = help_menu.Append(wx.ID_ABOUT, f'v{CURRENT_VERSION}', 'Show version')
         menu_bar.Append(help_menu, 'Help')
         self.Bind(wx.EVT_MENU, self.on_version, version_item)
+        
+        
 
         self.SetMenuBar(menu_bar)
 
@@ -68,26 +73,51 @@ class USBTestFrame(wx.Frame):
             response = requests.get(GITHUB_REPO_API, timeout=5)
             response.raise_for_status()
             latest_release = response.json()
-            latest_version = latest_release['tag_name'].lstrip('v')  # e.g., "v2.0.0" -> "2.0.0"
+            latest_version = latest_release['tag_name'].lstrip('v')
 
             if self.is_newer_version(latest_version, CURRENT_VERSION):
                 dlg = wx.MessageDialog(
                     self,
-                    f"Updated version USBTEST v{latest_version} is available. Please click OK.",
+                    f"Updated version USBTEST v{latest_version} is available.\nClick OK to auto-install.",
                     "Update Available",
                     wx.OK | wx.ICON_INFORMATION
                 )
                 if dlg.ShowModal() == wx.ID_OK:
-                    webbrowser.open(GITHUB_RELEASE_URL)
+                    installer_url = self.get_installer_url(latest_release)
+                    if installer_url:
+                        self.download_and_install(installer_url)
                 dlg.Destroy()
         except Exception as e:
-            # Ignore errors silently or log if needed
-            pass
+            pass  # Optional: print(e) for debugging
+
+    def get_installer_url(self, release_data):
+        for asset in release_data.get("assets", []):
+            name = asset.get("name", "")
+            if name.lower().endswith(".exe"):
+                return asset.get("browser_download_url")
+        return None
+
+    def download_and_install(self, url):
+        try:
+            # Download the installer to a temporary file
+            temp_dir = tempfile.gettempdir()
+            local_path = os.path.join(temp_dir, "USBTEST-Setup.exe")
+
+            with requests.get(url, stream=True) as r:
+                r.raise_for_status()
+                with open(local_path, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+            # Launch installer silently
+            subprocess.Popen([local_path, "/VERYSILENT", "/NORESTART"])
+            self.Close(True)  # Optionally close the app
+        except Exception as e:
+            wx.MessageBox("Failed to auto-install update.", "Error", wx.OK | wx.ICON_ERROR)
 
     @staticmethod
     def is_newer_version(latest, current):
-        def version_tuple(v):
-            return tuple(map(int, (v.split("."))))
+        def version_tuple(v): return tuple(map(int, v.split(".")))
         return version_tuple(latest) > version_tuple(current)
 
 
