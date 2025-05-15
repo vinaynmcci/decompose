@@ -6,7 +6,7 @@ import os
 import subprocess
 
 GITHUB_REPO_API = "https://api.github.com/repos/vinaynmcci/decompose/releases/latest"
-CURRENT_VERSION = "4.0.0"
+CURRENT_VERSION = "5.0.0"
 
 
 
@@ -30,6 +30,10 @@ class USBTestFrame(wx.Frame):
         menu_bar.Append(help_menu, 'Help')
         self.Bind(wx.EVT_MENU, self.on_version, version_item)
         
+        setting_menu = wx.Menu()
+        menu_bar.Append(setting_menu, 'Setting')
+        self.Bind(wx.EVT_MENU, self.on_version, version_item)
+        
         
 
         self.SetMenuBar(menu_bar)
@@ -46,6 +50,29 @@ class USBTestFrame(wx.Frame):
         self.send_button = wx.Button(self.panel, label='Send')
         vbox.Add(self.send_button, flag=wx.ALL | wx.ALIGN_RIGHT, border=10)
         self.send_button.Bind(wx.EVT_BUTTON, self.on_send)
+        
+        
+        self.label = wx.StaticText(self.panel, label="Text")
+        vbox.Add(self.label, flag=wx.ALL | wx.EXPAND, border=10)
+
+        self.text_ctrl = wx.TextCtrl(self.panel, style=wx.TE_MULTILINE)
+        vbox.Add(self.text_ctrl, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
+
+        self.send_button = wx.Button(self.panel, label='Send')
+        vbox.Add(self.send_button, flag=wx.ALL | wx.ALIGN_RIGHT, border=10)
+        self.send_button.Bind(wx.EVT_BUTTON, self.on_send)
+
+        # --- New IP Section ---
+        self.ip_label = wx.StaticText(self.panel, label="IP Address")
+        vbox.Add(self.ip_label, flag=wx.ALL | wx.EXPAND, border=10)
+
+        self.ip_text_ctrl = wx.TextCtrl(self.panel, value="192.168.1.100")
+        vbox.Add(self.ip_text_ctrl, flag=wx.ALL | wx.EXPAND, border=10)
+
+        self.ip_button = wx.Button(self.panel, label="Print IP")
+        vbox.Add(self.ip_button, flag=wx.ALL | wx.ALIGN_RIGHT, border=10)
+        self.ip_button.Bind(wx.EVT_BUTTON, self.on_print_ip)
+        # ----------------------
 
         self.panel.SetSizer(vbox)
 
@@ -61,6 +88,11 @@ class USBTestFrame(wx.Frame):
 
     def on_send(self, event):
         self.text_ctrl.SetValue("welcome USBTEST")
+    
+    def on_print_ip(self, event):
+        ip_value = self.ip_text_ctrl.GetValue()
+        print(f"IP Address: {ip_value}")
+
 
     def on_close(self, event):
         self.Close(True)
